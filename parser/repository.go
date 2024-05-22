@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -18,7 +17,7 @@ type Repository interface {
 	QueryContactsByPhoneNumber(ctx *gin.Context, phoneNumber string) ([]ContactData, error)
 	QueryContactsByEmail(ctx *gin.Context, email string) ([]ContactData, error)
 	UpdateContact(ctx *gin.Context, data ContactData) (ContactData, error)
-	QueryContactsByLinkedID(ctx context.Context, linkedID int) ([]ContactData, error)
+	QueryContactsByLinkedID(ctx *gin.Context, linkedID int) ([]ContactData, error)
 }
 
 func NewRepository(client *pgxpool.Pool) Repository {
@@ -119,7 +118,7 @@ func (r *repo) UpdateContact(ctx *gin.Context, data ContactData) (ContactData, e
 }
 
 // Repository implementation
-func (r *repo) QueryContactsByLinkedID(ctx context.Context, linkedID int) ([]ContactData, error) {
+func (r *repo) QueryContactsByLinkedID(ctx *gin.Context, linkedID int) ([]ContactData, error) {
 	rows, err := r.client.Query(ctx, `
         SELECT id, phoneNumber, email, linkedId, linkPrecedence, createdAt, updatedAt, deletedAt
         FROM bitespeed.Contact
