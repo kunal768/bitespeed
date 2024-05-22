@@ -33,8 +33,8 @@ func main() {
 	}
 	dbClient := initDbClient()
 	parserService := initParserService(dbClient)
-
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 
 	router.POST("/identify", parser.HandleContactRequest(parserService))
 
