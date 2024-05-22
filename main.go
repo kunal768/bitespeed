@@ -38,5 +38,5 @@ func main() {
 
 	router.POST("/identify", parser.HandleContactRequest(parserService))
 
-	router.Run()
+	router.Run(":4000")
 }
