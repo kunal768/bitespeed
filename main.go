@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,6 @@ import (
 
 func initDbClient() *pgxpool.Pool {
 	url := os.Getenv("DATABASE_URL")
-	fmt.Println("conn url", url)
 	client, err := client.ConnectDB(url)
 	if err != nil {
 		panic(err)
@@ -33,8 +31,7 @@ func main() {
 	}
 	dbClient := initDbClient()
 	parserService := initParserService(dbClient)
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.New()
+	router := gin.Default()
 
 	router.POST("/identify", parser.HandleContactRequest(parserService))
 

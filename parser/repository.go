@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -18,6 +19,7 @@ type Repository interface {
 	QueryContactsByEmail(ctx *gin.Context, email string) ([]ContactData, error)
 	UpdateContact(ctx *gin.Context, data ContactData) (ContactData, error)
 	QueryContactsByLinkedID(ctx *gin.Context, linkedID int) ([]ContactData, error)
+	QueryContactByID(ctx *gin.Context, linkedID int) (ContactData, error)
 }
 
 func NewRepository(client *pgxpool.Pool) Repository {
@@ -143,4 +145,23 @@ func (r *repo) QueryContactsByLinkedID(ctx *gin.Context, linkedID int) ([]Contac
 	}
 
 	return contacts, nil
+}
+
+func (r *repo) QueryContactByID(ctx *gin.Context, linkedID int) (ContactData, error) {
+	row := r.client.QueryRow(ctx, `
+        SELECT id, phoneNumber, email, linkedId, linkPrecedence, createdAt, updatedAt, deletedAt
+        FROM bitespeed.Contact
+        WHERE id = $1
+    `, linkedID)
+
+	var contact ContactData
+	err := row.Scan(&contact.ID, &contact.PhoneNumber, &contact.Email, &contact.LinkedID, &contact.LinkPrecedence, &contact.CreatedAt, &contact.UpdatedAt, &contact.DeletedAt)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return ContactData{}, fmt.Errorf("no contact found with linked ID: %v", linkedID)
+		}
+		return ContactData{}, fmt.Errorf("failed to scan contact row: %v", err)
+	}
+
+	return contact, nil
 }

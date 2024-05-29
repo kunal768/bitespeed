@@ -72,7 +72,7 @@ func insertNewSecondaryContact(ctx *gin.Context, repo Repository, email, phone s
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
 	}
-	insertedContact, err := repo.InsertContact(ctx, newContact)
+	_, err := repo.InsertContact(ctx, newContact)
 	if err != nil {
 		return ContactResponse{}, err
 	}
@@ -82,7 +82,8 @@ func insertNewSecondaryContact(ctx *gin.Context, repo Repository, email, phone s
 	if err != nil {
 		return ContactResponse{}, err
 	}
-	allContacts = append(allContacts, insertedContact) // Include the newly inserted contact
+
+	allContacts = append([]ContactData{primaryContact}, allContacts...)
 
 	emails, phones, secondaryIDs := collectContactDetails(allContacts)
 
@@ -121,7 +122,6 @@ func (s *svc) ParseIncomingRequest(ctx *gin.Context, req ContactRequest) (Contac
 	givenPhone := len(phone) > 0
 	givenEmail := len(email) > 0
 	ctxStd := ctx
-
 	if givenPhone && !givenEmail {
 		contactsByPhone, err := s.repo.QueryContactsByPhoneNumber(ctxStd, phone)
 		if err != nil {
@@ -130,8 +130,11 @@ func (s *svc) ParseIncomingRequest(ctx *gin.Context, req ContactRequest) (Contac
 		if len(contactsByPhone) == 0 {
 			return ContactResponse{}, errors.New("no contacts found for provided phone number")
 		}
+
 		primaryContact := contactsByPhone[0]
-		return gatherContactResponse(primaryContact, contactsByPhone)
+		secondaryContacts, _ := s.repo.QueryContactsByLinkedID(ctx, primaryContact.ID)
+		secondaryContacts = append([]ContactData{primaryContact}, secondaryContacts...)
+		return gatherContactResponse(primaryContact, secondaryContacts)
 	}
 
 	if givenEmail && !givenPhone {
@@ -142,8 +145,19 @@ func (s *svc) ParseIncomingRequest(ctx *gin.Context, req ContactRequest) (Contac
 		if len(contactsByEmail) == 0 {
 			return ContactResponse{}, errors.New("no contacts found for provided email")
 		}
-		primaryContact := contactsByEmail[0]
-		return gatherContactResponse(primaryContact, contactsByEmail)
+		var primaryContact ContactData
+		primaryContact = contactsByEmail[0]
+		if *primaryContact.LinkedID > 0 {
+			contact, err := s.repo.QueryContactByID(ctx, *primaryContact.LinkedID)
+			if err != nil {
+				return ContactResponse{}, err
+			}
+			primaryContact = contact
+		}
+
+		secondaryContacts, _ := s.repo.QueryContactsByLinkedID(ctx, primaryContact.ID)
+		secondaryContacts = append([]ContactData{primaryContact}, secondaryContacts...)
+		return gatherContactResponse(primaryContact, secondaryContacts)
 	}
 
 	if givenEmail && givenPhone {
@@ -192,8 +206,9 @@ func (s *svc) ParseIncomingRequest(ctx *gin.Context, req ContactRequest) (Contac
 				return ContactResponse{}, err
 			}
 
-			allContacts := append(contactsByEmail, contactsByPhone...)
-			return gatherContactResponse(primaryContact, allContacts)
+			secondaryContacts, _ := s.repo.QueryContactsByLinkedID(ctx, primaryContact.ID)
+			secondaryContacts = append([]ContactData{primaryContact}, secondaryContacts...)
+			return gatherContactResponse(primaryContact, secondaryContacts)
 		}
 	}
 
