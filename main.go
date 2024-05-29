@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -31,9 +32,17 @@ func main() {
 	}
 	dbClient := initDbClient()
 	parserService := initParserService(dbClient)
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 
 	router.POST("/identify", parser.HandleContactRequest(parserService))
 
-	router.Run(":4000")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if err := router.Run(":" + port); err != nil {
+		log.Panicf("error: %s", err)
+	}
+
 }
