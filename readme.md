@@ -1,4 +1,6 @@
-Code for [Bitespeed challenge](https://www.notion.so/bitespeed/Bitespeed-Backend-Task-Identity-Reconciliation-53392ab01fe149fab989422300423199)
+<!-- Code for [Bitespeed challenge](https://www.notion.so/bitespeed/Bitespeed-Backend-Task-Identity-Reconciliation-53392ab01fe149fab989422300423199) -->
+
+Linking different orders made with different contact information to the same person.
 
 # To Build
 
@@ -33,6 +35,116 @@ go build -o bitespeed
         "898991"
     ],
     "secondaryContactIds": []
+}
+```
+
+# Example Request  
+
+```json
+{
+	"email": "random@pennyworth.edu",
+	"phoneNumber": "898991"
+}
+```
+
+# Example Response
+
+```json
+{
+    "primaryContatctId": 51,
+    "emails": [
+        "babu1@digital.com",
+        "random@pennyworth.edu"
+    ],
+    "phoneNumbers": [
+        "898991",
+        "898991"
+    ],
+    "secondaryContactIds": [
+        52
+    ]
+}
+```
+
+# Example Request  
+
+```json
+{
+	"email": "random@pennyworth.edu",
+	"phoneNumber": "123456"
+}
+```
+
+# Example Response
+
+```json
+{
+    "primaryContatctId": 52,
+    "emails": [
+        "random@pennyworth.edu",
+        "random@pennyworth.edu"
+    ],
+    "phoneNumbers": [
+        "898991",
+        "123456"
+    ],
+    "secondaryContactIds": [
+        52,
+        53
+    ]
+}
+```
+
+
+# Example Request  
+
+```json
+{
+	"phoneNumber": "123456"
+}
+```
+
+# Example Response
+
+```json
+{
+    "primaryContatctId": 53,
+    "emails": [
+        "random@pennyworth.edu"
+    ],
+    "phoneNumbers": [
+        "123456"
+    ],
+    "secondaryContactIds": [
+        53
+    ]
+}
+```
+
+# Example Request  
+
+```json
+{
+	"email": "random@pennyworth.edu"
+}
+```
+
+# Example Response
+
+```json
+{
+    "primaryContatctId": 51,
+    "emails": [
+        "babu1@digital.com",
+        "random@pennyworth.edu"
+    ],
+    "phoneNumbers": [
+        "898991",
+        "898991"
+    ],
+    "secondaryContactIds": [
+        52
+    ]
 }
 ```
 
