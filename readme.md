@@ -1,6 +1,6 @@
 <!-- Code for [Bitespeed challenge](https://www.notion.so/bitespeed/Bitespeed-Backend-Task-Identity-Reconciliation-53392ab01fe149fab989422300423199) -->
 
-Linking different orders made with different contact information to the same person.
+Linking multiple contact informations to the same person using primary and secondary contacts
 
 # To Build
 
